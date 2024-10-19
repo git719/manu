@@ -1,0 +1,36 @@
+#!/bin/bash
+# build
+
+set -euo pipefail  # Fail on any error
+export Gre='\e[1;32m' Red='\e[1;31m' Rst='\e[0m'
+Prg=`head -1 go.mod | awk -F'/' '{print $NF}' | awk '{print $NF}'`
+case "$OSTYPE" in
+    "linux-gnu"* ) printf "==> Linux\n" && BIN=$GOPATH/bin/${Prg} ;;
+    "darwin"* )    printf "==> macOS\n" && BIN=$GOPATH/bin/${Prg} ;;
+    "msys"* )      printf "==> Windows with GitBASH\n" && BIN=$GOPATH/bin/${Prg}.exe ;;
+    * )            printf "==> Unknown \"$OSTYPE\" (Options are Linux, macOS, or Windows with GitBASH)\n" && exit 1 ;;
+esac
+
+go mod tidy
+go fmt
+go test ./...
+staticcheck ./...
+go build -ldflags "-s -w" -o $BIN
+
+# For cross compiling
+# GOOS=linux GOARCH=amd64|arm64   go build -ldflags "-s -w" -o ${Prg}
+# GOOS=windows GOARCH=amd64|arm64 go build -ldflags "-s -w" -o ${Prg}.exe
+# GOOS=darwin GOARCH=arm64        go build -ldflags "-s -w" -o ${Prg}
+
+printf "\n"
+ls -l $GOPATH/bin/$Prg | grep $Prg
+
+printf "\n==> grep replace go.mod:\n$Red$(grep replace go.mod)$Rst"
+printf "\n==> grep prgver main.go:\n$Gre$(grep 'prgver.*=' main.go)$Rst"
+printf "\n==> Last 5 tag versions:\n"
+git tag | sort -V | tail -5
+CurrentTag=`git tag | sort -V | tail -1`
+printf "\n==> To publish, do below one-liner, advancing tag version:\n"
+printf "\n==> Tag=$CurrentTag && git add . && git commit -m \"x updates\" && git tag \$Tag && git push origin \$Tag && git push\n\n"
+
+exit 0
