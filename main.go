@@ -15,7 +15,7 @@ var games []string
 
 const (
 	prgname      = "manu"
-	prgver       = "1.0.0"
+	prgver       = "1.0.1"
 	reverseColor = "\033[7m"
 	resetColor   = "\033[0m"
 )
