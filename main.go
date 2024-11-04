@@ -61,6 +61,10 @@ func getFontPath() string {
 }
 
 func sdlMain() error {
+	// Load games from directory
+	loadGamesFromDirectory()
+
+	// Initialize SDL and SDL_ttf
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		return err
 	}
@@ -71,6 +75,7 @@ func sdlMain() error {
 	}
 	defer ttf.Quit()
 
+	// Set up window and renderer
 	window, err := sdl.CreateWindow("Game Selector", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 800, 600, sdl.WINDOW_SHOWN)
 	if err != nil {
 		return err
@@ -83,7 +88,7 @@ func sdlMain() error {
 	}
 	defer renderer.Destroy()
 
-	// Load the font based on the operating system
+	// Load the font
 	fontPath := getFontPath()
 	font, err := ttf.OpenFont(fontPath, 24) // Adjust font size as needed
 	if err != nil {
@@ -91,16 +96,26 @@ func sdlMain() error {
 	}
 	defer font.Close()
 
-	loadGamesFromDirectory()
-	selected := 0
+	// Get window dimensions and convert them to int
+	winWidth, winHeight := window.GetSize()
+	winWidthInt, winHeightInt := int(winWidth), int(winHeight)
+	itemHeight := 30                           // Space between each menu item
+	totalMenuHeight := len(games) * itemHeight // Total height of all menu items
+
+	// Calculate starting positions for centered menu
+	startY := (winHeightInt - totalMenuHeight) / 2 // Center vertically
+	startX := winWidthInt/2 - 100                  // Center horizontally, adjust -100 for padding
 
 	running := true
+	selected := 0
+
 	for running {
 		renderer.SetDrawColor(0, 0, 0, 255)
 		renderer.Clear()
 
+		// Render each game in the centered position
 		for i, game := range games {
-			x, y := int32(50), int32(50+(i*30))
+			x, y := int32(startX), int32(startY+(i*itemHeight))
 
 			// Highlight selected game
 			if i == selected {
@@ -126,6 +141,7 @@ func sdlMain() error {
 
 		renderer.Present()
 
+		// Handle events
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch e := event.(type) {
 			case *sdl.QuitEvent:
