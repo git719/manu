@@ -70,6 +70,9 @@ func sdlMain() error {
 	}
 	defer sdl.Quit()
 
+	// Hide the mouse cursor
+	sdl.ShowCursor(sdl.DISABLE)
+
 	if err := ttf.Init(); err != nil {
 		return err
 	}
