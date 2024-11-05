@@ -13,8 +13,9 @@ import (
 )
 
 var fontPaths = map[string]string{
-	"linux":  "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf",
-	"darwin": "/System/Library/Fonts/SFNSMono.ttf", // macOS
+	//"linux":  "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf",
+	"linux":  "./fonts/DejaVuSansMono.ttf",
+	"darwin": "./fonts/DejaVuSansMono.ttf", // macOS
 }
 var games []string
 
@@ -85,9 +86,11 @@ func sdlMain() error {
 	}
 	defer window.Destroy()
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_SOFTWARE)
+	// sdl.RENDERER_ACCELERATED doesn't work in macOS
 	if err != nil {
-		return err
+		fmt.Fprintf(os.Stderr, "Failed to create renderer: %v\n", err)
+		os.Exit(1)
 	}
 	defer renderer.Destroy()
 
@@ -95,6 +98,7 @@ func sdlMain() error {
 	fontPath := getFontPath()
 	font, err := ttf.OpenFont(fontPath, 24) // Adjust font size as needed
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to load font at %s: %v\n", fontPath, err)
 		return err
 	}
 	defer font.Close()
@@ -169,13 +173,7 @@ func sdlMain() error {
 
 							runGame(games[selected])
 
-							// Reinitialize SDL to return to the menu
-							if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-								return err
-							}
-							if err := ttf.Init(); err != nil {
-								return err
-							}
+							os.Exit(0)
 						}
 					case sdl.K_ESCAPE:
 						running = false
