@@ -139,7 +139,7 @@ func sdlMain() error {
 			// Highlight selected game
 			if i == selected {
 				renderer.SetDrawColor(100, 100, 255, 255)
-				renderer.FillRect(&sdl.Rect{X: x - 10, Y: y, W: 200, H: 25})
+				renderer.FillRect(&sdl.Rect{X: x - 10, Y: y, W: 200, H: int32(itemHeight)}) // Match the item height
 			}
 
 			// Render text for each game
