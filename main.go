@@ -107,7 +107,8 @@ func sdlMain() error {
 	}
 
 	// Open the font from the embedded file
-	font, err := ttf.OpenFont(fontPath, 30) // Adjust font size as needed
+	fontSize := 30 // Adjust font size as needed
+	font, err := ttf.OpenFont(fontPath, fontSize)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to load font: %v\n", err)
 		os.Exit(1)
@@ -117,7 +118,7 @@ func sdlMain() error {
 	// Get window dimensions and convert them to int
 	winWidth, winHeight := window.GetSize()
 	winWidthInt, winHeightInt := int(winWidth), int(winHeight)
-	itemHeight := 30                           // Space between each menu item
+	itemHeight := fontSize + 5                 // Space between each menu item
 	totalMenuHeight := len(games) * itemHeight // Total height of all menu items
 
 	// Calculate starting positions for centered menu
