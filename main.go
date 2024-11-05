@@ -1,29 +1,46 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
 
-var fontPaths = map[string]string{
-	//"linux":  "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf",
-	"linux":  "./fonts/DejaVuSansMono.ttf",
-	"darwin": "./fonts/DejaVuSansMono.ttf", // macOS
-}
 var games []string
 
-// var selected int
-// const (
-// 	prgname = "manu"
-// 	prgver  = "2.0.0"
-// )
+//go:embed assets/fonts/DejaVuSansMono.ttf
+var fontData []byte
+
+const (
+	prgname = "manu"
+	prgver  = "2.0.0"
+)
+
+// Prints program usage
+func printUsage() {
+	fmt.Printf(prgname + " v" + prgver + "\n" +
+		"MAME selector menu - https://github.com/git719/manu\n" +
+		"Usage: " + prgname + " [options]\n" +
+		"  Run with no options to read ROMs under '$HOME/.mame/roms/' and present a selection menu\n" +
+		"  -?, -h, --help                    Print this usage page\n")
+	os.Exit(0)
+}
+
+func getEmbeddedFontPath() (string, error) {
+	// Create a temporary file to store the embedded font
+	tempFontPath := filepath.Join(os.TempDir(), "DejaVuSansMono.ttf")
+	err := os.WriteFile(tempFontPath, fontData, 0644)
+	if err != nil {
+		return "", fmt.Errorf("failed to write embedded font to file: %v", err)
+	}
+	return tempFontPath, nil
+}
 
 func loadGamesFromDirectory() {
 	romDir := filepath.Join(os.Getenv("HOME"), ".mame/roms")
@@ -51,16 +68,6 @@ func runGame(game string) {
 	cmd.Run()
 }
 
-func getFontPath() string {
-	osType := runtime.GOOS
-	if path, ok := fontPaths[osType]; ok {
-		return path
-	}
-	fmt.Println("No font path found for OS:", osType)
-	os.Exit(1)
-	return ""
-}
-
 func sdlMain() error {
 	// Load games from directory
 	loadGamesFromDirectory()
@@ -71,8 +78,7 @@ func sdlMain() error {
 	}
 	defer sdl.Quit()
 
-	// Hide the mouse cursor
-	sdl.ShowCursor(sdl.DISABLE)
+	sdl.ShowCursor(sdl.DISABLE) // Hide the mouse cursor
 
 	if err := ttf.Init(); err != nil {
 		return err
@@ -86,20 +92,25 @@ func sdlMain() error {
 	}
 	defer window.Destroy()
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_SOFTWARE)
-	// sdl.RENDERER_ACCELERATED doesn't work in macOS
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED) // sdl.RENDERER_SOFTWARE ?
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create renderer: %v\n", err)
 		os.Exit(1)
 	}
 	defer renderer.Destroy()
 
-	// Load the font
-	fontPath := getFontPath()
+	// Get the path to the embedded font
+	fontPath, err := getEmbeddedFontPath()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to get embedded font path: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Open the font from the embedded file
 	font, err := ttf.OpenFont(fontPath, 24) // Adjust font size as needed
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to load font at %s: %v\n", fontPath, err)
-		return err
+		fmt.Fprintf(os.Stderr, "Failed to load font: %v\n", err)
+		os.Exit(1)
 	}
 	defer font.Close()
 
@@ -187,6 +198,11 @@ func sdlMain() error {
 }
 
 func main() {
+	numberOfArguments := len(os.Args[1:])
+	if numberOfArguments > 0 {
+		printUsage()
+	}
+
 	if err := sdlMain(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
