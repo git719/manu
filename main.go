@@ -163,7 +163,19 @@ func sdlMain() error {
 							exec.Command("/sbin/poweroff").Run()
 							running = false
 						} else {
+							// Quit SDL session before launching the game
+							sdl.Quit()
+							ttf.Quit()
+
 							runGame(games[selected])
+
+							// Reinitialize SDL to return to the menu
+							if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+								return err
+							}
+							if err := ttf.Init(); err != nil {
+								return err
+							}
 						}
 					case sdl.K_ESCAPE:
 						running = false
