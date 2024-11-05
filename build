@@ -14,6 +14,7 @@ esac
 go mod tidy
 go fmt
 go test ./...
+# To download/install staticcheck
 # go install honnef.co/go/tools/cmd/staticcheck@latest
 staticcheck ./...
 go build -ldflags "-s -w" -o $BIN

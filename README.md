@@ -1,2 +1,4 @@
 # manu
-MAME menu driver
+
+MAME selector menu utility for Ubuntu on a Raspberry Pi 5.
+

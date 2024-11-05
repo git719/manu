@@ -107,7 +107,7 @@ func sdlMain() error {
 	}
 
 	// Open the font from the embedded file
-	font, err := ttf.OpenFont(fontPath, 24) // Adjust font size as needed
+	font, err := ttf.OpenFont(fontPath, 30) // Adjust font size as needed
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to load font: %v\n", err)
 		os.Exit(1)
