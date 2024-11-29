@@ -14,8 +14,13 @@ esac
 go mod tidy
 go fmt
 go test ./...
-# go install honnef.co/go/tools/cmd/staticcheck@latest
+
+if ! command -v staticcheck &> /dev/null; then
+    echo "==> staticcheck not found. Installing..."
+    go install honnef.co/go/tools/cmd/staticcheck@latest
+fi
 staticcheck ./...
+
 go build -ldflags "-s -w" -o $BIN
 
 # For cross compiling
