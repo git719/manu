@@ -5,7 +5,7 @@ SHARED_SCRIPT="https://raw.githubusercontent.com/git719/tools/refs/heads/main/go
 TEMP_SCRIPT="/tmp/go-compiler-script.sh"
 if [[ ! -f $TEMP_SCRIPT ]]; then
     echo "==> Downloading $SHARED_SCRIPT"
-    curl -s -o $TEMP_SCRIPT $SHARED_SCRIPT
+    curl -sko $TEMP_SCRIPT $SHARED_SCRIPT
     chmod +x $TEMP_SCRIPT
 fi
 $TEMP_SCRIPT
